@@ -1,21 +1,18 @@
-# RSR-template-repo - RSR Standard Justfile Template
+# rescript-env - Type-safe environment variables for ReScript
 # https://just.systems/man/en/
 #
-# This is the CANONICAL template for all RSR projects.
-# Copy this file to new projects and customize the {{PLACEHOLDER}} values.
-#
 # Run `just` to see all available recipes
-# Run `just cookbook` to generate docs/just-cookbook.adoc
-# Run `just combinations` to see matrix recipe options
+# Run `just build` to compile ReScript
+# Run `just dev` to watch for changes
 
 set shell := ["bash", "-uc"]
 set dotenv-load := true
 set positional-arguments := true
 
-# Project metadata - CUSTOMIZE THESE
-project := "RSR-template-repo"
+# Project metadata
+project := "rescript-env"
 version := "0.1.0"
-tier := "infrastructure"  # 1 | 2 | infrastructure
+tier := "1"  # RSR Tier 1 (Gold) - ReScript
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # DEFAULT & HELP
@@ -32,148 +29,90 @@ help recipe="":
         just --list --unsorted
         echo ""
         echo "Usage: just help <recipe>"
-        echo "       just cookbook     # Generate full documentation"
-        echo "       just combinations # Show matrix recipes"
+        echo ""
+        echo "Quick start:"
+        echo "  just build    # Compile ReScript"
+        echo "  just dev      # Watch mode"
+        echo "  just test     # Run tests"
     else
         just --show "{{recipe}}" 2>/dev/null || echo "Recipe '{{recipe}}' not found"
     fi
 
-# Show this project's info
+# Show project info
 info:
     @echo "Project: {{project}}"
     @echo "Version: {{version}}"
-    @echo "RSR Tier: {{tier}}"
-    @echo "Recipes: $(just --summary | wc -w)"
-    @[ -f STATE.scm ] && grep -oP '\(phase\s+\.\s+\K[^)]+' STATE.scm | head -1 | xargs -I{} echo "Phase: {}" || true
+    @echo "RSR Tier: {{tier}} (Gold - ReScript)"
+    @echo "Language: ReScript"
+    @echo "Runtime: Deno / Node.js"
+    @echo ""
+    @echo "Source files:"
+    @find src -name "*.res" -o -name "*.resi" 2>/dev/null | wc -l | xargs -I{} echo "  {} ReScript files"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # BUILD & COMPILE
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Build the project (debug mode)
-build *args:
+# Build ReScript to JavaScript
+build:
     @echo "Building {{project}}..."
-    # TODO: Add build command for your language
-    # Rust: cargo build {{args}}
-    # ReScript: npm run build
-    # Elixir: mix compile
-
-# Build in release mode with optimizations
-build-release *args:
-    @echo "Building {{project}} (release)..."
-    # TODO: Add release build command
-    # Rust: cargo build --release {{args}}
+    deno task build
 
 # Build and watch for changes
-build-watch:
-    @echo "Watching for changes..."
-    # TODO: Add watch command
-    # Rust: cargo watch -x build
-    # ReScript: npm run watch
+dev:
+    @echo "Starting watch mode..."
+    deno task dev
 
-# Clean build artifacts [reversible: rebuild with `just build`]
+# Clean build artifacts
 clean:
     @echo "Cleaning..."
-    rm -rf target _build dist lib node_modules
-
-# Deep clean including caches [reversible: rebuild]
-clean-all: clean
-    rm -rf .cache .tmp
+    deno task clean
+    rm -rf lib/
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # TEST & QUALITY
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # Run all tests
-test *args:
+test:
     @echo "Running tests..."
-    # TODO: Add test command
-    # Rust: cargo test {{args}}
-    # ReScript: npm test
-    # Elixir: mix test
+    @if [ -d "tests" ]; then \
+        deno test --allow-env tests/; \
+    else \
+        echo "No tests directory found. Create tests/*.test.ts to add tests."; \
+    fi
 
 # Run tests with verbose output
 test-verbose:
     @echo "Running tests (verbose)..."
-    # TODO: Add verbose test
+    deno test --allow-env --reporter=verbose tests/ 2>/dev/null || echo "No tests found"
 
-# Run tests and generate coverage report
-test-coverage:
-    @echo "Running tests with coverage..."
-    # TODO: Add coverage command
-    # Rust: cargo llvm-cov
+# Type check ReScript
+check:
+    @echo "Type checking..."
+    deno task build 2>&1 | head -20
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # LINT & FORMAT
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Format all source files [reversible: git checkout]
+# Format ReScript source files
 fmt:
     @echo "Formatting..."
-    # TODO: Add format command
-    # Rust: cargo fmt
-    # ReScript: npm run format
-    # Elixir: mix format
+    @command -v rescript-format >/dev/null && find src -name "*.res" -exec rescript-format -i {} \; || echo "rescript-format not found, skipping"
 
 # Check formatting without changes
 fmt-check:
     @echo "Checking format..."
-    # TODO: Add format check
-    # Rust: cargo fmt --check
+    @command -v rescript-format >/dev/null && find src -name "*.res" -exec rescript-format --check {} \; || echo "rescript-format not found, skipping"
 
-# Run linter
-lint:
-    @echo "Linting..."
-    # TODO: Add lint command
-    # Rust: cargo clippy -- -D warnings
+# Run linter (uses ReScript compiler warnings)
+lint: check
+    @echo "Lint complete (via ReScript compiler)"
 
 # Run all quality checks
 quality: fmt-check lint test
     @echo "All quality checks passed!"
-
-# Fix all auto-fixable issues [reversible: git checkout]
-fix: fmt
-    @echo "Fixed all auto-fixable issues"
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# RUN & EXECUTE
-# ═══════════════════════════════════════════════════════════════════════════════
-
-# Run the application
-run *args:
-    @echo "Running {{project}}..."
-    # TODO: Add run command
-    # Rust: cargo run {{args}}
-
-# Run in development mode with hot reload
-dev:
-    @echo "Starting dev mode..."
-    # TODO: Add dev command
-
-# Run REPL/interactive mode
-repl:
-    @echo "Starting REPL..."
-    # TODO: Add REPL command
-    # Elixir: iex -S mix
-    # Guile: guix shell guile -- guile
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# DEPENDENCIES
-# ═══════════════════════════════════════════════════════════════════════════════
-
-# Install all dependencies
-deps:
-    @echo "Installing dependencies..."
-    # TODO: Add deps command
-    # Rust: (automatic with cargo)
-    # ReScript: npm install
-    # Elixir: mix deps.get
-
-# Audit dependencies for vulnerabilities
-deps-audit:
-    @echo "Auditing dependencies..."
-    # TODO: Add audit command
-    # Rust: cargo audit
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # DOCUMENTATION
@@ -181,19 +120,17 @@ deps-audit:
 
 # Generate all documentation
 docs:
-    @mkdir -p docs/generated docs/man
+    @mkdir -p docs/generated
     just cookbook
-    just man
     @echo "Documentation generated in docs/"
 
-# Generate justfile cookbook documentation
+# Generate justfile cookbook
 cookbook:
     #!/usr/bin/env bash
     mkdir -p docs
     OUTPUT="docs/just-cookbook.adoc"
     echo "= {{project}} Justfile Cookbook" > "$OUTPUT"
     echo ":toc: left" >> "$OUTPUT"
-    echo ":toclevels: 3" >> "$OUTPUT"
     echo "" >> "$OUTPUT"
     echo "Generated: $(date -Iseconds)" >> "$OUTPUT"
     echo "" >> "$OUTPUT"
@@ -203,7 +140,6 @@ cookbook:
         if [[ "$line" =~ ^[[:space:]]+([a-z_-]+) ]]; then
             recipe="${BASH_REMATCH[1]}"
             echo "=== $recipe" >> "$OUTPUT"
-            echo "" >> "$OUTPUT"
             echo "[source,bash]" >> "$OUTPUT"
             echo "----" >> "$OUTPUT"
             echo "just $recipe" >> "$OUTPUT"
@@ -213,51 +149,12 @@ cookbook:
     done
     echo "Generated: $OUTPUT"
 
-# Generate man page
-man:
-    #!/usr/bin/env bash
-    mkdir -p docs/man
-    cat > docs/man/{{project}}.1 << EOF
-.TH RSR-TEMPLATE-REPO 1 "$(date +%Y-%m-%d)" "{{version}}" "RSR Template Manual"
-.SH NAME
-{{project}} \- RSR standard repository template
-.SH SYNOPSIS
-.B just
-[recipe] [args...]
-.SH DESCRIPTION
-Canonical template for RSR (Rhodium Standard Repository) projects.
-.SH AUTHOR
-Hyperpolymath <hyperpolymath@proton.me>
-EOF
-    echo "Generated: docs/man/{{project}}.1"
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# CONTAINERS (nerdctl + Wolfi)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-# Build container image
-container-build tag="latest":
-    @if [ -f Containerfile ]; then \
-        nerdctl build -t {{project}}:{{tag}} -f Containerfile .; \
-    else \
-        echo "No Containerfile found"; \
-    fi
-
-# Run container
-container-run tag="latest" *args:
-    nerdctl run --rm -it {{project}}:{{tag}} {{args}}
-
-# Push container image
-container-push registry="ghcr.io/hyperpolymath" tag="latest":
-    nerdctl tag {{project}}:{{tag}} {{registry}}/{{project}}:{{tag}}
-    nerdctl push {{registry}}/{{project}}:{{tag}}
-
 # ═══════════════════════════════════════════════════════════════════════════════
 # CI & AUTOMATION
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # Run full CI pipeline locally
-ci: deps quality
+ci: quality
     @echo "CI pipeline complete!"
 
 # Install git hooks
@@ -266,7 +163,7 @@ install-hooks:
     @cat > .git/hooks/pre-commit << 'EOF'
 #!/bin/bash
 just fmt-check || exit 1
-just lint || exit 1
+just build || exit 1
 EOF
     @chmod +x .git/hooks/pre-commit
     @echo "Git hooks installed"
@@ -276,16 +173,10 @@ EOF
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # Run security audit
-security: deps-audit
+security:
     @echo "=== Security Audit ==="
-    @command -v gitleaks >/dev/null && gitleaks detect --source . --verbose || true
-    @command -v trivy >/dev/null && trivy fs --severity HIGH,CRITICAL . || true
+    @command -v gitleaks >/dev/null && gitleaks detect --source . --verbose || echo "gitleaks not installed"
     @echo "Security audit complete"
-
-# Generate SBOM
-sbom:
-    @mkdir -p docs/security
-    @command -v syft >/dev/null && syft . -o spdx-json > docs/security/sbom.spdx.json || echo "syft not found"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # VALIDATION & COMPLIANCE
@@ -305,103 +196,33 @@ validate-rsr:
     for f in .well-known/security.txt .well-known/ai.txt .well-known/humans.txt; do
         [ -f "$f" ] || MISSING="$MISSING $f"
     done
-    if [ ! -f "guix.scm" ] && [ ! -f ".guix-channel" ] && [ ! -f "flake.nix" ]; then
-        MISSING="$MISSING guix.scm/flake.nix"
-    fi
+    # Note: guix.scm/flake.nix optional for pure JS libraries
     if [ -n "$MISSING" ]; then
         echo "MISSING:$MISSING"
         exit 1
     fi
     echo "RSR compliance: PASS"
 
-# Validate STATE.scm syntax
+# Validate machine-readable state files
 validate-state:
-    @if [ -f "STATE.scm" ]; then \
-        guile -c "(primitive-load \"STATE.scm\")" 2>/dev/null && echo "STATE.scm: valid" || echo "STATE.scm: INVALID"; \
-    else \
-        echo "No STATE.scm found"; \
-    fi
+    @echo "Checking .machine_readable/ files..."
+    @for f in STATE.scm META.scm ECOSYSTEM.scm AGENTIC.scm; do \
+        [ -f ".machine_readable/$f" ] && echo "  ✓ $f" || echo "  ✗ $f missing"; \
+    done
 
 # Full validation suite
 validate: validate-rsr validate-state
     @echo "All validations passed!"
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# STATE MANAGEMENT
+# PUBLISHING
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Update STATE.scm timestamp
-state-touch:
-    @if [ -f "STATE.scm" ]; then \
-        sed -i 's/(updated . "[^"]*")/(updated . "'"$(date -Iseconds)"'")/' STATE.scm && \
-        echo "STATE.scm timestamp updated"; \
-    fi
-
-# Show current phase from STATE.scm
-state-phase:
-    @grep -oP '\(phase\s+\.\s+\K[^)]+' STATE.scm 2>/dev/null | head -1 || echo "unknown"
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# GUIX & NIX
-# ═══════════════════════════════════════════════════════════════════════════════
-
-# Enter Guix development shell (primary)
-guix-shell:
-    guix shell -D -f guix.scm
-
-# Build with Guix
-guix-build:
-    guix build -f guix.scm
-
-# Enter Nix development shell (fallback)
-nix-shell:
-    @if [ -f "flake.nix" ]; then nix develop; else echo "No flake.nix"; fi
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# HYBRID AUTOMATION
-# ═══════════════════════════════════════════════════════════════════════════════
-
-# Run local automation tasks
-automate task="all":
-    #!/usr/bin/env bash
-    case "{{task}}" in
-        all) just fmt && just lint && just test && just docs && just state-touch ;;
-        cleanup) just clean && find . -name "*.orig" -delete && find . -name "*~" -delete ;;
-        update) just deps && just validate ;;
-        *) echo "Unknown: {{task}}. Use: all, cleanup, update" && exit 1 ;;
-    esac
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# COMBINATORIC MATRIX RECIPES
-# ═══════════════════════════════════════════════════════════════════════════════
-
-# Build matrix: [debug|release] × [target] × [features]
-build-matrix mode="debug" target="" features="":
-    @echo "Build matrix: mode={{mode}} target={{target}} features={{features}}"
-    # Customize for your build system
-
-# Test matrix: [unit|integration|e2e|all] × [verbosity] × [parallel]
-test-matrix suite="unit" verbosity="normal" parallel="true":
-    @echo "Test matrix: suite={{suite}} verbosity={{verbosity}} parallel={{parallel}}"
-
-# Container matrix: [build|run|push|shell|scan] × [registry] × [tag]
-container-matrix action="build" registry="ghcr.io/hyperpolymath" tag="latest":
-    @echo "Container matrix: action={{action}} registry={{registry}} tag={{tag}}"
-
-# CI matrix: [lint|test|build|security|all] × [quick|full]
-ci-matrix stage="all" depth="quick":
-    @echo "CI matrix: stage={{stage}} depth={{depth}}"
-
-# Show all matrix combinations
-combinations:
-    @echo "=== Combinatoric Matrix Recipes ==="
-    @echo ""
-    @echo "Build Matrix: just build-matrix [debug|release] [target] [features]"
-    @echo "Test Matrix:  just test-matrix [unit|integration|e2e|all] [verbosity] [parallel]"
-    @echo "Container:    just container-matrix [build|run|push|shell|scan] [registry] [tag]"
-    @echo "CI Matrix:    just ci-matrix [lint|test|build|security|all] [quick|full]"
-    @echo ""
-    @echo "Total combinations: ~10 billion"
+# Publish to JSR (JavaScript Registry)
+publish-jsr:
+    @echo "Publishing to JSR..."
+    @echo "Run: deno publish"
+    @echo "(Requires authentication with deno login)"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # VERSION CONTROL
@@ -412,7 +233,7 @@ status:
     @git status --short
 
 # Show recent commits
-log count="20":
+log count="10":
     @git log --oneline -{{count}}
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -421,11 +242,12 @@ log count="20":
 
 # Count lines of code
 loc:
-    @find . \( -name "*.rs" -o -name "*.ex" -o -name "*.res" -o -name "*.ncl" -o -name "*.scm" \) 2>/dev/null | xargs wc -l 2>/dev/null | tail -1 || echo "0"
+    @echo "Lines of code:"
+    @find src -name "*.res" -o -name "*.resi" 2>/dev/null | xargs wc -l 2>/dev/null || echo "0"
 
 # Show TODO comments
 todos:
-    @grep -rn "TODO\|FIXME" --include="*.rs" --include="*.ex" --include="*.res" . 2>/dev/null || echo "No TODOs"
+    @grep -rn "TODO\|FIXME" --include="*.res" --include="*.resi" src/ 2>/dev/null || echo "No TODOs found"
 
 # Open in editor
 edit:

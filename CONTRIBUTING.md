@@ -1,116 +1,220 @@
-# Clone the repository
-git clone https://{{FORGE}}/{{OWNER}}/{{REPO}}.git
-cd {{REPO}}
+# Contributing to rescript-env
 
-# Using Nix (recommended for reproducibility)
-nix develop
+Thank you for your interest in contributing to rescript-env! This document provides guidelines and instructions for contributing.
 
-# Or using toolbox/distrobox
-toolbox create {{REPO}}-dev
-toolbox enter {{REPO}}-dev
-# Install dependencies manually
+## Table of Contents
 
-# Verify setup
-just check   # or: cargo check / mix compile / etc.
-just test    # Run test suite
+- [Code of Conduct](#code-of-conduct)
+- [Getting Started](#getting-started)
+- [Development Setup](#development-setup)
+- [Making Changes](#making-changes)
+- [Pull Request Process](#pull-request-process)
+- [Style Guide](#style-guide)
+- [Reporting Issues](#reporting-issues)
+
+## Code of Conduct
+
+This project adheres to the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
+
+## Getting Started
+
+### Prerequisites
+
+- [Deno](https://deno.land/) 1.40 or later
+- [ReScript](https://rescript-lang.org/) 11 or later
+- [just](https://just.systems/) command runner (optional but recommended)
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/hyperpolymath/rescript-env.git
+cd rescript-env
 ```
 
-### Repository Structure
-```
-{{REPO}}/
-├── src/                 # Source code (Perimeter 1-2)
-├── lib/                 # Library code (Perimeter 1-2)
-├── extensions/          # Extensions (Perimeter 2)
-├── plugins/             # Plugins (Perimeter 2)
-├── tools/               # Tooling (Perimeter 2)
-├── docs/                # Documentation (Perimeter 3)
-│   ├── architecture/    # ADRs, specs (Perimeter 2)
-│   └── proposals/       # RFCs (Perimeter 3)
-├── examples/            # Examples (Perimeter 3)
-├── spec/                # Spec tests (Perimeter 3)
-├── tests/               # Test suite (Perimeter 2-3)
-├── .well-known/         # Protocol files (Perimeter 1-3)
-├── .github/             # GitHub config (Perimeter 1)
-│   ├── ISSUE_TEMPLATE/
-│   └── workflows/
-├── CHANGELOG.md
-├── CODE_OF_CONDUCT.md
-├── CONTRIBUTING.md      # This file
-├── GOVERNANCE.md
-├── LICENSE
-├── MAINTAINERS.md
-├── README.adoc
-├── SECURITY.md
-├── flake.nix            # Nix flake (Perimeter 1)
-└── justfile             # Task runner (Perimeter 1)
+## Development Setup
+
+### Build the Project
+
+```bash
+# Using just (recommended)
+just build
+
+# Or using Deno directly
+deno task build
 ```
 
----
+### Watch Mode
 
-## How to Contribute
+```bash
+just dev
+# or
+deno task dev
+```
 
-### Reporting Bugs
+### Run Tests
 
-**Before reporting**:
-1. Search existing issues
-2. Check if it's already fixed in `{{MAIN_BRANCH}}`
-3. Determine which perimeter the bug affects
+```bash
+just test
+# or
+deno test --allow-env tests/
+```
 
-**When reporting**:
+### Project Structure
 
-Use the [bug report template](.github/ISSUE_TEMPLATE/bug_report.md) and include:
+```
+rescript-env/
+├── src/
+│   ├── Env.res          # Main implementation
+│   └── Env.resi         # Public interface
+├── tests/               # Test files (to be added)
+├── deno.json            # Deno configuration
+├── rescript.json        # ReScript configuration
+├── justfile             # Task runner recipes
+├── README.adoc          # Documentation
+├── ROADMAP.adoc         # Future plans
+└── CHANGELOG.adoc       # Version history
+```
 
-- Clear, descriptive title
-- Environment details (OS, versions, toolchain)
-- Steps to reproduce
-- Expected vs actual behaviour
-- Logs, screenshots, or minimal reproduction
-
-### Suggesting Features
-
-**Before suggesting**:
-1. Check the [roadmap](ROADMAP.md) if available
-2. Search existing issues and discussions
-3. Consider which perimeter the feature belongs to
-
-**When suggesting**:
-
-Use the [feature request template](.github/ISSUE_TEMPLATE/feature_request.md) and include:
-
-- Problem statement (what pain point does this solve?)
-- Proposed solution
-- Alternatives considered
-- Which perimeter this affects
-
-### Your First Contribution
-
-Look for issues labelled:
-
-- [`good first issue`](https://{{FORGE}}/{{OWNER}}/{{REPO}}/labels/good%20first%20issue) — Simple Perimeter 3 tasks
-- [`help wanted`](https://{{FORGE}}/{{OWNER}}/{{REPO}}/labels/help%20wanted) — Community help needed
-- [`documentation`](https://{{FORGE}}/{{OWNER}}/{{REPO}}/labels/documentation) — Docs improvements
-- [`perimeter-3`](https://{{FORGE}}/{{OWNER}}/{{REPO}}/labels/perimeter-3) — Community sandbox scope
-
----
-
-## Development Workflow
+## Making Changes
 
 ### Branch Naming
+
+Use descriptive branch names following this convention:
+
 ```
-docs/short-description       # Documentation (P3)
-test/what-added              # Test additions (P3)
-feat/short-description       # New features (P2)
-fix/issue-number-description # Bug fixes (P2)
-refactor/what-changed        # Code improvements (P2)
-security/what-fixed          # Security fixes (P1-2)
+feat/add-schema-validation    # New features
+fix/handle-empty-values       # Bug fixes
+docs/update-api-reference     # Documentation
+test/add-getint-tests         # Tests
+refactor/simplify-runtime     # Code improvements
 ```
 
 ### Commit Messages
 
 We follow [Conventional Commits](https://www.conventionalcommits.org/):
+
 ```
 <type>(<scope>): <description>
 
 [optional body]
 
 [optional footer]
+```
+
+Types:
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation
+- `test`: Adding tests
+- `refactor`: Code change that neither fixes a bug nor adds a feature
+- `style`: Formatting, missing semicolons, etc.
+- `chore`: Maintenance tasks
+
+Examples:
+```
+feat(api): add getList function for comma-separated values
+
+fix(runtime): handle undefined process.env in browsers
+
+docs(readme): add getBool examples
+```
+
+## Pull Request Process
+
+1. **Fork the repository** and create your branch from `main`
+
+2. **Make your changes** following the style guide
+
+3. **Add tests** for any new functionality
+
+4. **Update documentation** if needed (README.adoc, CHANGELOG.adoc)
+
+5. **Run quality checks**:
+   ```bash
+   just quality
+   ```
+
+6. **Submit your PR** with:
+   - Clear description of changes
+   - Link to any related issues
+   - Screenshots/examples if applicable
+
+7. **Address review feedback** promptly
+
+### PR Requirements
+
+- [ ] Code builds without errors (`just build`)
+- [ ] All tests pass (`just test`)
+- [ ] No new linting warnings
+- [ ] Documentation updated if needed
+- [ ] CHANGELOG.adoc updated for user-facing changes
+
+## Style Guide
+
+### ReScript Style
+
+- Use `@@uncurried` for all modules
+- Prefer `option` types over nullable values
+- Use pattern matching over if/else chains
+- Keep functions small and focused
+- Document public API with `/** */` comments
+
+### Example
+
+```rescript
+/**
+ * Get an environment variable as a list.
+ * Splits on commas and trims whitespace.
+ */
+let getList = (name: string): option<array<string>> => {
+  get(name)->Option.map(value => {
+    value
+    ->String.split(",")
+    ->Array.map(String.trim)
+  })
+}
+```
+
+### File Organization
+
+- One module per file
+- Interface file (`.resi`) for all public modules
+- Keep implementation private unless needed
+
+## Reporting Issues
+
+### Bug Reports
+
+Use the [bug report template](.github/ISSUE_TEMPLATE/bug_report.md) and include:
+
+- Clear, descriptive title
+- ReScript and Deno versions
+- Runtime (Deno/Node.js/Bun)
+- Steps to reproduce
+- Expected vs actual behaviour
+- Minimal code example
+
+### Feature Requests
+
+Use the [feature request template](.github/ISSUE_TEMPLATE/feature_request.md) and include:
+
+- Problem statement
+- Proposed solution
+- Alternatives considered
+- Example usage
+
+### Questions
+
+For questions about usage, open a [discussion](https://github.com/hyperpolymath/rescript-env/discussions) rather than an issue.
+
+## Licence
+
+By contributing to rescript-env, you agree that your contributions will be licensed under the AGPL-3.0-or-later licence.
+
+## Recognition
+
+Contributors will be acknowledged in:
+- The CHANGELOG for their specific contributions
+- The repository's contributors list
+
+Thank you for contributing! 🙏
