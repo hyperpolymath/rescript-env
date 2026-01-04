@@ -1,3 +1,9 @@
+# rescript-env - AI Assistant Instructions
+
+## Project Overview
+
+This is `rescript-env`, a type-safe environment variable library for ReScript. Part of the [ReScript Full Stack](https://github.com/hyperpolymath/rescript-full-stack) ecosystem.
+
 ## Machine-Readable Artefacts
 
 The following files in `.machine_readable/` contain structured project metadata:
@@ -11,74 +17,93 @@ The following files in `.machine_readable/` contain structured project metadata:
 
 ---
 
-# CLAUDE.md - AI Assistant Instructions
+## Development Guidelines
 
-## Language Policy (Hyperpolymath Standard)
+### Language Policy
 
-### ALLOWED Languages & Tools
+| Language | Use Case |
+|----------|----------|
+| **ReScript** | All library code (src/*.res, src/*.resi) |
+| **JavaScript** | Only compiled output (.res.js) - never hand-written |
+| **Deno** | Runtime and task runner |
+| **Guile Scheme** | Machine-readable metadata files |
 
-| Language/Tool | Use Case | Notes |
-|---------------|----------|-------|
-| **ReScript** | Primary application code | Compiles to JS, type-safe |
-| **Deno** | Runtime & package management | Replaces Node/npm/bun |
-| **Rust** | Performance-critical, systems, WASM | Preferred for CLI tools |
-| **Tauri 2.0+** | Mobile apps (iOS/Android) | Rust backend + web UI |
-| **Dioxus** | Mobile apps (native UI) | Pure Rust, React-like |
-| **Gleam** | Backend services | Runs on BEAM or compiles to JS |
-| **Bash/POSIX Shell** | Scripts, automation | Keep minimal |
-| **JavaScript** | Only where ReScript cannot | MCP protocol glue, Deno APIs |
-| **Python** | SaltStack only | No other Python permitted |
-| **Nickel** | Configuration language | For complex configs |
-| **Guile Scheme** | State/meta files | STATE.scm, META.scm, ECOSYSTEM.scm |
-| **Julia** | Batch scripts, data processing | Per RSR |
-| **OCaml** | AffineScript compiler | Language-specific |
-| **Ada** | Safety-critical systems | Where required |
+### BANNED
 
-### BANNED - Do Not Use
+- TypeScript (use ReScript)
+- Node.js/npm/yarn/pnpm/bun (use Deno)
+- Go, Python, Java, Kotlin, Swift
 
-| Banned | Replacement |
-|--------|-------------|
-| TypeScript | ReScript |
-| Node.js | Deno |
-| npm | Deno |
-| Bun | Deno |
-| pnpm/yarn | Deno |
-| Go | Rust |
-| Python (general) | ReScript/Rust |
-| Java/Kotlin | Rust/Tauri/Dioxus |
-| Swift | Tauri/Dioxus |
-| React Native | Tauri/Dioxus |
-| Flutter/Dart | Tauri/Dioxus |
+### Key Files
 
-### Mobile Development
+```
+src/Env.res      # Main implementation
+src/Env.resi     # Public interface (API surface)
+deno.json        # Deno configuration
+rescript.json    # ReScript compiler config
+justfile         # Task runner
+```
 
-**No exceptions for Kotlin/Swift** - use Rust-first approach:
+### Building
 
-1. **Tauri 2.0+** - Web UI (ReScript) + Rust backend, MIT/Apache-2.0
-2. **Dioxus** - Pure Rust native UI, MIT/Apache-2.0
+```bash
+just build       # Compile ReScript
+just dev         # Watch mode
+just test        # Run tests
+just quality     # All checks
+```
 
-Both are FOSS with independent governance (no Big Tech).
+### Code Style
 
-### Enforcement Rules
+- Use `@@uncurried` for all modules
+- Prefer `option` types over nullable values
+- Use pattern matching over if/else
+- Document public API with `/** */` comments
+- Keep functions small and focused
 
-1. **No new TypeScript files** - Convert existing TS to ReScript
-2. **No package.json for runtime deps** - Use deno.json imports
-3. **No node_modules in production** - Deno caches deps automatically
-4. **No Go code** - Use Rust instead
-5. **Python only for SaltStack** - All other Python must be rewritten
-6. **No Kotlin/Swift for mobile** - Use Tauri 2.0+ or Dioxus
+### When Modifying Code
 
-### Package Management
+1. Read `src/Env.resi` to understand the public API
+2. Make changes in `src/Env.res`
+3. Update the interface in `src/Env.resi` if API changes
+4. Run `just build` to verify compilation
+5. Update documentation if needed
 
-- **Primary**: Guix (guix.scm)
-- **Fallback**: Nix (flake.nix)
-- **JS deps**: Deno (deno.json imports)
+### Architecture Decisions
+
+See `.machine_readable/META.scm` for ADRs:
+
+- **ADR-001**: Runtime detection via globalThis
+- **ADR-002**: Option types for missing values
+- **ADR-003**: ESM-only output
+- **ADR-004**: Boolean parsing values
 
 ### Security Requirements
 
-- No MD5/SHA1 for security (use SHA256+)
-- HTTPS only (no HTTP URLs)
 - No hardcoded secrets
-- SHA-pinned dependencies
-- SPDX license headers on all files
+- HTTPS only for all URLs
+- SPDX license headers on all source files
 
+---
+
+## Common Tasks
+
+### Add a new API function
+
+1. Add implementation in `src/Env.res`
+2. Export in `src/Env.resi`
+3. Add documentation in README.adoc
+4. Update CHANGELOG.adoc
+
+### Update dependencies
+
+1. Edit `rescript.json` for ReScript deps
+2. Edit `deno.json` for Deno deps
+3. Run `just build` to verify
+
+### Prepare a release
+
+1. Update version in `deno.json`
+2. Update CHANGELOG.adoc
+3. Update STATE.scm version
+4. Create git tag
