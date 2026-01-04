@@ -18,7 +18,7 @@ image:https://img.shields.io/badge/Part%20of-ReScript%20Full%20Stack-purple[Ecos
 
 Part of the https://github.com/hyperpolymath/rescript-full-stack[ReScript Full Stack] ecosystem.
 
-== Overview
+Part of the https://github.com/hyperpolymath/rescript-full-stack[ReScript Full Stack] ecosystem.
 
 `rescript-env` provides a type-safe, cross-runtime API for accessing environment variables in ReScript applications. It automatically detects whether your code is running in Deno, Bun, or Node.js and uses the appropriate APIs.
 
