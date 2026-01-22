@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-or-later
+// SPDX-License-Identifier: PMPL-1.0-or-later
 // SPDX-FileCopyrightText: 2025 Hyperpolymath
 
 = rescript-env
@@ -373,7 +373,7 @@ rescript-env/
 ├── README.adoc          # This file
 ├── ROADMAP.adoc         # Future plans
 ├── CHANGELOG.adoc       # Version history
-└── LICENCE              # AGPL-3.0-or-later
+└── LICENCE              # PMPL-1.0-or-later
 ----
 
 == Ecosystem
@@ -400,12 +400,12 @@ See link:CONTRIBUTING.md[CONTRIBUTING.md] for guidelines.
 
 == Licence
 
-SPDX-License-Identifier: `AGPL-3.0-or-later`
+SPDX-License-Identifier: `PMPL-1.0-or-later`
 
 Copyright (C) 2025 Hyperpolymath
 
 This program is free software: you can redistribute it and/or modify it under
-the terms of the GNU Affero General Public License as published by the Free
+the terms of the Palimpsest-MPL License as published by the Free
 Software Foundation, either version 3 of the License, or (at your option) any
 later version.
 
